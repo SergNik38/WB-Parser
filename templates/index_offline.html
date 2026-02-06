@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WB Parser (Offline Mode)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        input {
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #6b21a8;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #581c87;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #statusArea {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>WB Parser (Lite)</h1>
+        <p>Если эта страница загружается быстро, значит проблема в CDN.</p>
+
+        <form id="parseForm">
+            <label>Поисковый запрос:
+                <input type="text" name="query" required placeholder="iphone 15" value="носки">
+            </label>
+            <br><br>
+            <label>Количество:
+                <input type="number" name="limit" min="1" max="1000" value="10">
+            </label>
+            <br><br>
+            <button type="submit" id="submitBtn">Начать</button>
+        </form>
+
+        <div id="statusArea" class="hidden">
+            <p id="statusText">Загрузка...</p>
+            <a id="downloadLink" class="hidden" href="#">Скачать Excel</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('parseForm');
+        const statusArea = document.getElementById('statusArea');
+        const statusText = document.getElementById('statusText');
+        const downloadLink = document.getElementById('downloadLink');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            statusArea.classList.remove('hidden');
+            statusText.textContent = 'Идет сбор данных...';
+            downloadLink.classList.add('hidden');
+
+            const formData = new FormData(form);
+            try {
+                const response = await fetch('/api/parse', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    statusText.textContent = `Готово! Найдено: ${data.count}`;
+                    downloadLink.href = `/api/download/${data.filename}`;
+                    downloadLink.classList.remove('hidden');
+                } else {
+                    statusText.textContent = 'Ошибка: ' + data.message;
+                }
+            } catch (err) {
+                statusText.textContent = 'Ошибка сети: ' + err.message;
+            }
+        });
+    </script>
+</body>
+
+</html>

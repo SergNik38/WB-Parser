@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  wb-parser:
+    build: .
+    container_name: wb_parser
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./exports:/app/exports  # Persist Excel files
+    restart: unless-stopped
+    # environment:
+    #   - PROXY_URL=http://user:pass@ip:port  # Uncomment to use proxy via env var (needs code support)
